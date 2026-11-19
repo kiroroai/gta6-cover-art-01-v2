@@ -39,7 +39,9 @@ function redraw() {
 }
 
 function syncTransformControls() {
-  const t = selectedPanel().transform;
+  const panel = selectedPanel();
+  if (!panel) return;
+  const t = panel.transform;
   zoomRange.value = String(t.zoom);
   dxRange.value = String(t.dx);
   dyRange.value = String(t.dy);

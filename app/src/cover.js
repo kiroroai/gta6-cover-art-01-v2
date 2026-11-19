@@ -38,8 +38,11 @@ function paintPhotoPanel(ctx, rect, img, transform, filter) {
   const scale = Math.max(rect.w / img.naturalWidth, rect.h / img.naturalHeight) * transform.zoom;
   const dw = img.naturalWidth * scale;
   const dh = img.naturalHeight * scale;
-  const dx = rect.x + (rect.w - dw) / 2 + transform.dx * rect.w;
-  const dy = rect.y + (rect.h - dh) / 2 + transform.dy * rect.h;
+  // Clamp the drag offset to the overflow, so a positioned photo always covers its panel.
+  const offX = Math.max(-(dw - rect.w) / 2, Math.min((dw - rect.w) / 2, transform.dx * rect.w));
+  const offY = Math.max(-(dh - rect.h) / 2, Math.min((dh - rect.h) / 2, transform.dy * rect.h));
+  const dx = rect.x + (rect.w - dw) / 2 + offX;
+  const dy = rect.y + (rect.h - dh) / 2 + offY;
   ctx.save();
   ctx.beginPath();
   ctx.rect(rect.x, rect.y, rect.w, rect.h);
@@ -123,20 +126,23 @@ function paintTaglineBar(ctx, w, h, tagline) {
   ctx.fillText('18+', w * 0.016 + box / 2, y + barH / 2 + 1);
   const text = (tagline || '').trim().toUpperCase();
   if (text) {
+    const spaced = text.split('').join('  ');
     let size = barH * 0.42;
     ctx.font = `800 ${size}px 'Segoe UI', system-ui, sans-serif`;
-    while (ctx.measureText(text).width > w * 0.62 && size > 10) {
+    while (ctx.measureText(spaced).width > w * (w < h * 1.2 ? 0.78 : 0.58) && size > 10) {
       size *= 0.94;
       ctx.font = `800 ${size}px 'Segoe UI', system-ui, sans-serif`;
     }
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText(text.split('').join('  '), w * 0.52, y + barH / 2 + 1);
+    ctx.fillText(text.split('').join('  '), w * (w < h * 1.2 ? 0.54 : 0.50), y + barH / 2 + 1);
   }
-  ctx.fillStyle = '#19e3d2';
-  ctx.font = `700 ${barH * 0.26}px system-ui, sans-serif`;
-  ctx.textAlign = 'right';
-  ctx.fillText('VICE SHORES STUDIOS', w * 0.984, y + barH / 2 + 1);
+  if (w >= h * 1.2) {
+    ctx.fillStyle = '#19e3d2';
+    ctx.font = `700 ${barH * 0.26}px system-ui, sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText('VICE SHORES STUDIOS', w * 0.984, y + barH / 2 + 1);
+  }
 }
 
 /**
